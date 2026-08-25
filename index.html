@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trip Budget - How much will your trip cost?</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ヘッダーエリア -->
+  <header class="header">
+    <h1 class="logo">Trip Budget</h1>
+    <p class="tagline">How much will your trip cost?</p>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="container">
+    
+    <!-- 入力フォームカード -->
+    <section class="card form-card">
+      <h2>Trip Details</h2>
+      <form id="budget-form" novalidate>
+        
+        <!-- 出発地 & 旅行先 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="origin">Where are you starting from?</label>
+            <input type="text" id="origin" placeholder="e.g. Tokyo" required>
+          </div>
+          <div class="form-group">
+            <label for="destination">Where are you going?</label>
+            <input type="text" id="destination" placeholder="e.g. Thailand" required>
+          </div>
+        </div>
+
+        <!-- 日数 & 人数 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="days">How many days?</label>
+            <input type="number" id="days" min="1" placeholder="e.g. 10" required>
+          </div>
+          <div class="form-group">
+            <label for="travelers">How many people?</label>
+            <input type="number" id="travelers" min="1" value="1" required>
+          </div>
+        </div>
+
+        <!-- 旅行スタイル -->
+        <div class="form-group">
+          <label for="style">What's your travel style?</label>
+          <select id="style">
+            <option value="Budget">Budget</option>
+            <option value="Standard" selected>Standard</option>
+            <option value="Comfortable">Comfortable</option>
+          </select>
+        </div>
+
+        <!-- 費用入力エリア -->
+        <h3 class="section-title">Estimated Expenses</h3>
+
+        <!-- 航空券 & 宿泊費 (1泊あたり) -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="flight">How much is your flight? (per person)</label>
+            <div class="input-unit">
+              <span class="unit">¥</span>
+              <input type="number" id="flight" min="0" placeholder="60000" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="hotel">How much is your hotel? (per room / night)</label>
+            <div class="input-unit">
+              <span class="unit">¥</span>
+              <input type="number" id="hotel" min="0" placeholder="10000" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- 食費 (1日あたり) & 交通費 (1日あたり) -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="food">Daily Food expense (per person)</label>
+            <div class="input-unit">
+              <span class="unit">¥</span>
+              <input type="number" id="food" min="0" placeholder="3000" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="transport">Daily Transportation (per person)</label>
+            <div class="input-unit">
+              <span class="unit">¥</span>
+              <input type="number" id="transport" min="0" placeholder="1000" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- 観光費 (1日あたり) & その他 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="activities">Daily Activities (per person)</label>
+            <div class="input-unit">
+              <span class="unit">¥</span>
+              <input type="number" id="activities" min="0" placeholder="1500" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="other">Other total expenses</label>
+            <div class="input-unit">
+              <span class="unit">¥</span>
+              <input type="number" id="other" min="0" placeholder="5000" value="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- エラーメッセージ表示エリア -->
+        <div id="error-message" class="error-message"></div>
+
+        <!-- 計算ボタン -->
+        <button type="submit" id="calculate-btn" class="btn-primary">Calculate Budget</button>
+      </form>
+    </section>
+
+    <!-- 計算結果表示カード（初期状態は隠す） -->
+    <section id="result-card" class="card result-card hidden">
+      <h2 class="result-title">Travel Budget</h2>
+      
+      <!-- 旅行概要 -->
+      <div class="trip-summary">
+        <p class="summary-destination" id="res-destination">Thailand</p>
+        <p class="summary-details">
+          <span id="res-days">10</span> Days / 
+          <span id="res-travelers">2</span> Travelers
+        </p>
+        <span class="badge" id="res-style">Standard</span>
+      </div>
+
+      <!-- メインの合計金額（一番大きく表示） -->
+      <div class="total-box">
+        <span class="total-label">Total Cost</span>
+        <span class="total-amount" id="res-total">¥0</span>
+      </div>
+
+      <!-- 分析（1人あたり、1日あたり） -->
+      <div class="breakdown-grid">
+        <div class="breakdown-item">
+          <span class="breakdown-label">Per Person</span>
+          <span class="breakdown-value" id="res-per-person">¥0</span>
+        </div>
+        <div class="breakdown-item">
+          <span class="breakdown-label">Per Day (Total)</span>
+          <span class="breakdown-value" id="res-per-day">¥0</span>
+        </div>
+      </div>
+
+      <!-- 費用内訳リスト -->
+      <div class="cost-details">
+        <h3>Cost Breakdown</h3>
+        <dl class="details-list">
+          <div class="detail-row">
+            <dt>Flight</dt>
+            <dd id="res-flight">¥0</dd>
+          </div>
+          <div class="detail-row">
+            <dt>Accommodation</dt>
+            <dd id="res-hotel">¥0</dd>
+          </div>
+          <div class="detail-row">
+            <dt>Food</dt>
+            <dd id="res-food">¥0</dd>
+          </div>
+          <div class="detail-row">
+            <dt>Transportation</dt>
+            <dd id="res-transport">¥0</dd>
+          </div>
+          <div class="detail-row">
+            <dt>Activities</dt>
+            <dd id="res-activities">¥0</dd>
+          </div>
+          <div class="detail-row">
+            <dt>Other</dt>
+            <dd id="res-other">¥0</dd>
+          </div>
+        </dl>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
