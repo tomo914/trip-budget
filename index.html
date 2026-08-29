@@ -46,7 +46,7 @@
           </div>
         </div>
 
-        <!-- 旅行スタイル & 表示通貨（Version 2で追加） -->
+        <!-- 旅行スタイル & 表示通貨 -->
         <div class="form-row">
           <div class="form-group">
             <label for="style">What's your travel style?</label>
@@ -72,7 +72,7 @@
         <!-- 費用入力エリア -->
         <h3 class="section-title">Estimated Expenses (in JPY)</h3>
 
-        <!-- 航空券 & 宿泊費 (1泊あたり) -->
+        <!-- 航空券 & 宿泊費 -->
         <div class="form-row">
           <div class="form-group">
             <label for="flight">How much is your flight? (per person)</label>
@@ -90,7 +90,7 @@
           </div>
         </div>
 
-        <!-- 食費 (1日あたり) & 交通費 (1日あたり) -->
+        <!-- 食費 & 交通費 -->
         <div class="form-row">
           <div class="form-group">
             <label for="food">Daily Food expense (per person)</label>
@@ -108,7 +108,7 @@
           </div>
         </div>
 
-        <!-- 観光費 (1日あたり) & その他 -->
+        <!-- 観光費 & その他 -->
         <div class="form-row">
           <div class="form-group">
             <label for="activities">Daily Activities (per person)</label>
@@ -126,7 +126,7 @@
           </div>
         </div>
 
-        <!-- エラーメッセージ表示エリア -->
+        <!-- エラーメッセージ -->
         <div id="error-message" class="error-message"></div>
 
         <!-- 計算ボタン -->
@@ -134,7 +134,37 @@
       </form>
     </section>
 
-    <!-- 計算結果表示カード（初期状態は隠す） -->
+    <!-- 外貨計算機カード（新機能） -->
+    <section class="card converter-card">
+      <h2>Quick Currency Converter</h2>
+      <p class="converter-sub">現地での買い物や食事の金額を日本円にさくっと換算</p>
+      
+      <div class="converter-box">
+        <div class="converter-inputs">
+          <div class="form-group">
+            <label for="foreign-amount">Amount (外貨の金額)</label>
+            <input type="number" id="foreign-amount" placeholder="e.g. 50" min="0" step="any">
+          </div>
+          <div class="form-group">
+            <label for="foreign-currency">Currency (通貨)</label>
+            <select id="foreign-currency">
+              <option value="USD" selected>USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="THB">THB (฿)</option>
+              <option value="KRW">KRW (₩)</option>
+              <option value="CNY">CNY (¥)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="converter-result">
+          <span class="converter-label">In Japanese Yen (JPY)</span>
+          <span class="converter-value" id="converter-jpy-result">¥0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 計算結果表示カード -->
     <section id="result-card" class="card result-card hidden">
       <h2 class="result-title">Travel Budget</h2>
       
@@ -148,11 +178,10 @@
         <span class="badge" id="res-style">Standard</span>
       </div>
 
-      <!-- メインの合計金額（一番大きく表示） -->
+      <!-- メインの合計金額 -->
       <div class="total-box">
         <span class="total-label">Total Cost</span>
         <span class="total-amount" id="res-total">¥0</span>
-        <!-- 適用為替レートの表示用（Version 2で追加） -->
         <p class="rate-info" id="res-rate-info"></p>
       </div>
 
