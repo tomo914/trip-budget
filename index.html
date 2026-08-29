@@ -46,18 +46,31 @@
           </div>
         </div>
 
-        <!-- 旅行スタイル -->
-        <div class="form-group">
-          <label for="style">What's your travel style?</label>
-          <select id="style">
-            <option value="Budget">Budget</option>
-            <option value="Standard" selected>Standard</option>
-            <option value="Comfortable">Comfortable</option>
-          </select>
+        <!-- 旅行スタイル & 表示通貨（Version 2で追加） -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="style">What's your travel style?</label>
+            <select id="style">
+              <option value="Budget">Budget</option>
+              <option value="Standard" selected>Standard</option>
+              <option value="Comfortable">Comfortable</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="currency">Display Currency</label>
+            <select id="currency">
+              <option value="JPY" selected>JPY (¥)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="THB">THB (฿)</option>
+              <option value="KRW">KRW (₩)</option>
+              <option value="CNY">CNY (¥)</option>
+            </select>
+          </div>
         </div>
 
         <!-- 費用入力エリア -->
-        <h3 class="section-title">Estimated Expenses</h3>
+        <h3 class="section-title">Estimated Expenses (in JPY)</h3>
 
         <!-- 航空券 & 宿泊費 (1泊あたり) -->
         <div class="form-row">
@@ -139,6 +152,8 @@
       <div class="total-box">
         <span class="total-label">Total Cost</span>
         <span class="total-amount" id="res-total">¥0</span>
+        <!-- 適用為替レートの表示用（Version 2で追加） -->
+        <p class="rate-info" id="res-rate-info"></p>
       </div>
 
       <!-- 分析（1人あたり、1日あたり） -->

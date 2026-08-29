@@ -1,15 +1,15 @@
 // --- 1. HTML要素の取得 ---
-// フォームとカード
 const budgetForm = document.getElementById('budget-form');
 const resultCard = document.getElementById('result-card');
 const errorMessage = document.getElementById('error-message');
 
-// 入力要素
 const originInput = document.getElementById('origin');
 const destinationInput = document.getElementById('destination');
 const daysInput = document.getElementById('days');
 const travelersInput = document.getElementById('travelers');
 const styleInput = document.getElementById('style');
+const currencyInput = document.getElementById('currency'); // 【追加】
+
 const flightInput = document.getElementById('flight');
 const hotelInput = document.getElementById('hotel');
 const foodInput = document.getElementById('food');
@@ -17,16 +17,15 @@ const transportInput = document.getElementById('transport');
 const activitiesInput = document.getElementById('activities');
 const otherInput = document.getElementById('other');
 
-// 結果表示用要素
 const resDestination = document.getElementById('res-destination');
 const resDays = document.getElementById('res-days');
 const resTravelers = document.getElementById('res-travelers');
 const resStyle = document.getElementById('res-style');
 const resTotal = document.getElementById('res-total');
+const resRateInfo = document.getElementById('res-rate-info'); // 【追加】
 const resPerPerson = document.getElementById('res-per-person');
 const resPerDay = document.getElementById('res-per-day');
 
-// 内訳表示用要素
 const resFlight = document.getElementById('res-flight');
 const resHotel = document.getElementById('res-hotel');
 const resFood = document.getElementById('res-food');
@@ -35,17 +34,56 @@ const resActivities = document.getElementById('res-activities');
 const resOther = document.getElementById('res-other');
 
 
-// --- 2. ユーティリティ関数 ---
-// 数値を3桁区切りの日本円表記（例: ¥155,000）にフォーマット
-function formatJPY(amount) {
-  return '¥' + Math.round(amount).toLocaleString('ja-JP');
+// --- 2. 為替API & 通貨フォーマットの設定 ---
+// 為替レート保持オブジェクト (初期値: JPY基準)
+let exchangeRates = { JPY: 1 };
+
+// 通貨記号のマッピング
+const currencySymbols = {
+  JPY: '¥',
+  USD: '$',
+  EUR: '€',
+  THB: '฿',
+  KRW: '₩',
+  CNY: '¥'
+};
+
+// 無料の為替APIから最新レートを取得（ベース: JPY）
+async function fetchExchangeRates() {
+  try {
+    const response = await fetch('https://open.er-api.com/v6/latest/JPY');
+    const data = await response.json();
+    if (data && data.rates) {
+      exchangeRates = data.rates;
+      console.log('Exchange rates loaded successfully:', exchangeRates);
+    }
+  } catch (error) {
+    console.error('Failed to fetch rates, falling back to default JPY.', error);
+  }
 }
 
-// エラーメッセージの表示/非表示切り替え
+// ページ読み込み時に為替レートを取得
+fetchExchangeRates();
+
+// 指定した通貨表記にフォーマットする関数
+function formatCurrency(amountJPY, targetCurrency) {
+  const symbol = currencySymbols[targetCurrency] || '';
+  const rate = exchangeRates[targetCurrency] || 1;
+  const convertedAmount = amountJPY * rate;
+
+  // JPYとKRWは少数点なし、その他は小数点以下2桁表示
+  const decimals = (targetCurrency === 'JPY' || targetCurrency === 'KRW') ? 0 : 2;
+
+  return symbol + convertedAmount.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
+}
+
 function showError(message) {
   errorMessage.textContent = message;
   errorMessage.classList.add('visible');
-  resultCard.classList.add('hidden'); // エラー時は結果カードを隠す
+  resultCard.classList.add('hidden');
 }
 
 function clearError() {
@@ -54,29 +92,25 @@ function clearError() {
 }
 
 
-// --- 3. バリデーション関数（入力チェック） ---
+// --- 3. バリデーション処理 ---
 function validateInputs() {
-  // 1. 必須項目の空チェック
   if (!originInput.value.trim() || !destinationInput.value.trim()) {
     showError('Please enter both origin and destination.');
     return false;
   }
 
-  // 2. 日数のチェック（1以上）
   const days = Number(daysInput.value);
   if (!daysInput.value || isNaN(days) || days < 1) {
     showError('Number of days must be at least 1.');
     return false;
   }
 
-  // 3. 人数のチェック（1以上）
   const travelers = Number(travelersInput.value);
   if (!travelersInput.value || isNaN(travelers) || travelers < 1) {
     showError('Number of travelers must be at least 1.');
     return false;
   }
 
-  // 4. 金額項目のチェック（0以上）
   const moneyInputs = [
     { element: flightInput, label: 'Flight' },
     { element: hotelInput, label: 'Hotel' },
@@ -101,7 +135,6 @@ function validateInputs() {
     }
   }
 
-  // すべてのチェックを通過
   clearError();
   return true;
 }
@@ -109,14 +142,11 @@ function validateInputs() {
 
 // --- 4. 自動計算メイン処理 ---
 function calculateBudget() {
-  // まず入力チェックを実行
-  if (!validateInputs()) {
-    return; // チェックに通らなければここで計算を中止
-  }
+  if (!validateInputs()) return;
 
-  // 数値への変換
   const days = Number(daysInput.value);
   const travelers = Number(travelersInput.value);
+  const selectedCurrency = currencyInput.value;
   
   const flightPrice = Number(flightInput.value);
   const hotelPrice = Number(hotelInput.value);
@@ -125,10 +155,9 @@ function calculateBudget() {
   const activitiesPrice = Number(activitiesInput.value);
   const otherPrice = Number(otherInput.value);
 
-  // 宿泊数（最低0泊）
   const nights = Math.max(days - 1, 0);
 
-  // 計算処理
+  // すべて日本円（JPY）で計算
   const totalFlight = flightPrice * travelers;
   const totalHotel = hotelPrice * nights * travelers;
   const totalFood = foodPrice * days * travelers;
@@ -141,24 +170,31 @@ function calculateBudget() {
   const perPersonCost = totalCost / travelers;
   const perDayCost = totalCost / days;
 
-  // 画面への反映
+  // 画面表示への反映 (選択された通貨へ自動換算)
   resDestination.textContent = destinationInput.value.trim();
   resDays.textContent = days;
   resTravelers.textContent = travelers;
   resStyle.textContent = styleInput.value;
 
-  resTotal.textContent = formatJPY(totalCost);
-  resPerPerson.textContent = formatJPY(perPersonCost);
-  resPerDay.textContent = formatJPY(perDayCost);
+  resTotal.textContent = formatCurrency(totalCost, selectedCurrency);
+  resPerPerson.textContent = formatCurrency(perPersonCost, selectedCurrency);
+  resPerDay.textContent = formatCurrency(perDayCost, selectedCurrency);
 
-  resFlight.textContent = formatJPY(totalFlight);
-  resHotel.textContent = formatJPY(totalHotel);
-  resFood.textContent = formatJPY(totalFood);
-  resTransport.textContent = formatJPY(totalTransport);
-  resActivities.textContent = formatJPY(totalActivities);
-  resOther.textContent = formatJPY(totalOther);
+  resFlight.textContent = formatCurrency(totalFlight, selectedCurrency);
+  resHotel.textContent = formatCurrency(totalHotel, selectedCurrency);
+  resFood.textContent = formatCurrency(totalFood, selectedCurrency);
+  resTransport.textContent = formatCurrency(totalTransport, selectedCurrency);
+  resActivities.textContent = formatCurrency(totalActivities, selectedCurrency);
+  resOther.textContent = formatCurrency(totalOther, selectedCurrency);
 
-  // 結果カードを表示
+  // 適用レート情報のテキスト表示
+  if (selectedCurrency !== 'JPY' && exchangeRates[selectedCurrency]) {
+    const rate = exchangeRates[selectedCurrency];
+    resRateInfo.textContent = `(Rate: 1 JPY = ${rate.toFixed(4)} ${selectedCurrency})`;
+  } else {
+    resRateInfo.textContent = '';
+  }
+
   resultCard.classList.remove('hidden');
 }
 
