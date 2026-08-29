@@ -101,7 +101,6 @@ select:focus {
   border-color: #0071e3;
 }
 
-/* 通貨入力の単位アイコン */
 .input-unit {
   position: relative;
   display: flex;
@@ -292,6 +291,28 @@ select:focus {
 .breakdown-value {
   font-size: 16px;
   font-weight: 600;
+}
+
+/* --- グラフ表示エリア（新機能） --- */
+.chart-container {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #fbfbfd;
+  border: 1px solid #e5e5ea;
+  border-radius: 14px;
+}
+
+.chart-container h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.chart-wrapper {
+  position: relative;
+  height: 240px;
+  width: 100%;
 }
 
 /* 費用内訳リスト */

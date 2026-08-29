@@ -38,6 +38,9 @@ const foreignAmountInput = document.getElementById('foreign-amount');
 const foreignCurrencySelect = document.getElementById('foreign-currency');
 const converterJpyResult = document.getElementById('converter-jpy-result');
 
+// グラフ用変数
+let budgetChartInstance = null;
+
 
 // --- 2. 為替API & 通貨フォーマットの設定 ---
 let exchangeRates = { JPY: 1 };
@@ -51,7 +54,6 @@ const currencySymbols = {
   CNY: '¥'
 };
 
-// 無料の為替APIから最新レートを取得（ベース: JPY）
 async function fetchExchangeRates() {
   try {
     const response = await fetch('https://open.er-api.com/v6/latest/JPY');
@@ -59,7 +61,6 @@ async function fetchExchangeRates() {
     if (data && data.rates) {
       exchangeRates = data.rates;
       console.log('Exchange rates loaded successfully:', exchangeRates);
-      // レート読み込み完了時に計算機も更新
       updateConverter();
     }
   } catch (error) {
@@ -69,7 +70,6 @@ async function fetchExchangeRates() {
 
 fetchExchangeRates();
 
-// 指定した通貨表記にフォーマットする関数
 function formatCurrency(amountJPY, targetCurrency) {
   const symbol = currencySymbols[targetCurrency] || '';
   const rate = exchangeRates[targetCurrency] || 1;
@@ -93,8 +93,6 @@ function updateConverter() {
     return;
   }
 
-  // 1 JPY = rate foreign_currency
-  // したがって foreign_currency -> JPY は amount / rate
   const rate = exchangeRates[currency];
   if (rate) {
     const jpyValue = amount / rate;
@@ -104,12 +102,68 @@ function updateConverter() {
   }
 }
 
-// 外貨金額の入力や通貨切り替え時に即座に計算
 foreignAmountInput.addEventListener('input', updateConverter);
 foreignCurrencySelect.addEventListener('change', updateConverter);
 
 
-// --- 4. バリデーション処理 ---
+// --- 4. 円グラフ描画機能 ---
+function renderChart(dataValues, currencySymbol) {
+  const ctx = document.getElementById('budgetChart').getContext('2d');
+
+  // 既にグラフが存在する場合は一度破棄して再描画
+  if (budgetChartInstance) {
+    budgetChartInstance.destroy();
+  }
+
+  budgetChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Flight', 'Accommodation', 'Food', 'Transportation', 'Activities', 'Other'],
+      datasets: [{
+        data: dataValues,
+        backgroundColor: [
+          '#0071e3', // Flight (Blue)
+          '#34c759', // Accommodation (Green)
+          '#ff9500', // Food (Orange)
+          '#af52de', // Transport (Purple)
+          '#ff2d55', // Activities (Pink)
+          '#8e8e93'  // Other (Grey)
+        ],
+        borderWidth: 2,
+        borderColor: '#ffffff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            boxWidth: 12,
+            padding: 14,
+            font: {
+              size: 12
+            }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              return `${label}: ${currencySymbol}${value.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+            }
+          }
+        }
+      },
+      cutout: '65%' // ドーナツの穴の大きさ
+    }
+  });
+}
+
+
+// --- 5. バリデーション処理 ---
 function showError(message) {
   errorMessage.textContent = message;
   errorMessage.classList.add('visible');
@@ -168,7 +222,7 @@ function validateInputs() {
 }
 
 
-// --- 5. 自動計算メイン処理 ---
+// --- 6. 自動計算メイン処理 ---
 function calculateBudget() {
   if (!validateInputs()) return;
 
@@ -220,11 +274,26 @@ function calculateBudget() {
     resRateInfo.textContent = '';
   }
 
+  // --- グラフ用データの計算（選択通貨に換算） ---
+  const rate = exchangeRates[selectedCurrency] || 1;
+  const chartData = [
+    totalFlight * rate,
+    totalHotel * rate,
+    totalFood * rate,
+    totalTransport * rate,
+    totalActivities * rate,
+    totalOther * rate
+  ];
+  const symbol = currencySymbols[selectedCurrency] || '';
+
+  // 円グラフを描画
+  renderChart(chartData, symbol);
+
   resultCard.classList.remove('hidden');
 }
 
 
-// --- 6. イベントリスナー ---
+// --- 7. イベントリスナー ---
 budgetForm.addEventListener('submit', function (event) {
   event.preventDefault();
   calculateBudget();

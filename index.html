@@ -134,7 +134,7 @@
       </form>
     </section>
 
-    <!-- 外貨計算機カード（新機能） -->
+    <!-- 外貨計算機カード -->
     <section class="card converter-card">
       <h2>Quick Currency Converter</h2>
       <p class="converter-sub">現地での買い物や食事の金額を日本円にさくっと換算</p>
@@ -197,6 +197,14 @@
         </div>
       </div>
 
+      <!-- 【追加】予算の割合（円グラフ） -->
+      <div class="chart-container">
+        <h3>Cost Distribution</h3>
+        <div class="chart-wrapper">
+          <canvas id="budgetChart"></canvas>
+        </div>
+      </div>
+
       <!-- 費用内訳リスト -->
       <div class="cost-details">
         <h3>Cost Breakdown</h3>
@@ -232,6 +240,8 @@
 
   </main>
 
+  <!-- Chart.js（グラフ描画ライブラリ）の読み込み -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
